@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import Modal from "./Modal/Modal";
 
@@ -11,34 +11,74 @@ enum tipoTransacao {
 type transacao = {
   descricao: string;
   valor: number
+  data: string
+  tipo: tipoTransacao
 }
 
 export default function Index() {
   const [saldo, setSaldo] = useState<number>(1000);
   const [modal, setModal] = useState<boolean>(false);
   const [tipo, setTipo] = useState<tipoTransacao>(tipoTransacao.semTipo);
-  const [transacoes, setTransacoes] = useState<transacao[]>()
+  const [transacoes, setTransacoes] = useState<Array<transacao>>(new Array<transacao>());
 
   const iniciarTransacaoReceita = () => {
     setTipo(tipoTransacao.receita);
     exibirModal();
   }
-  
+
   const iniciarTransacaoDespesa = () => {
     setTipo(tipoTransacao.despesa);
     exibirModal();
   }
 
-  useEffect(() => {}, [tipo]);
-  
   const fecharModal = () => {
     setModal(false)
     setTipo(tipoTransacao.semTipo);
   }
-  
+
   const exibirModal = () => {
     setModal((prev) => !prev);
   };
+
+  const cadastrarTransacao = (data: { valor: string; descricao: string; data: string }) => {
+    validarCampos(data);
+
+    let novaTransacao: transacao;
+    if (tipo === tipoTransacao.receita) {
+      novaTransacao = {
+        descricao: data.descricao,
+        valor: parseFloat(data.valor),
+        data: data.data,
+        tipo: tipoTransacao.receita
+      };
+      setSaldo((prev) => prev + novaTransacao.valor);
+    } else if (tipo === tipoTransacao.despesa) {
+      novaTransacao = {
+        descricao: data.descricao,
+        valor: parseFloat(data.valor),
+        data: data.data,
+        tipo: tipoTransacao.despesa
+      };
+      setSaldo((prev) => prev - novaTransacao.valor);
+    } else {
+      return;
+    }
+    setTransacoes((prev) => [...prev, novaTransacao]);
+    fecharModal();
+  }
+
+  const validarCampos = (data: { valor: string; descricao: string; data: string }) => {
+    if (!data.valor || !data.descricao || !data.data) {
+      alert("Preencha todos os campos!");
+      return;
+    }
+
+    const valor = parseFloat(data.valor);
+    if (isNaN(valor) || valor <= 0) {
+      alert("Valor inválido!");
+      return;
+    }
+  }
 
   const getSaldoFormatado = (saldo: number): string => {
     return saldo.toLocaleString(
@@ -49,7 +89,7 @@ export default function Index() {
       }
     );
   };
-  
+
   return (
     <View style={{ flex: 1, backgroundColor: '#181A20' }}>
       <View style={styles.BalanceContainer}>
@@ -60,6 +100,7 @@ export default function Index() {
       <Modal
         rendered={modal}
         onCancel={fecharModal}
+        onSubmit={cadastrarTransacao}
       />
       <View style={styles.btnContainer}>
         <TouchableOpacity onPress={iniciarTransacaoReceita} style={styles.addBtn}>

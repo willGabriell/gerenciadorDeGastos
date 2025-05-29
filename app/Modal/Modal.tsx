@@ -12,7 +12,6 @@ export default function Modal(props: modalProps) {
     const [valor, setValor] = useState('');
     const [descricao, setDescricao] = useState('');
     const [data, setData] = useState('');
-    const [tipo, setTipo] = useState('');
 
     if (!props.rendered) return null;
     return (
