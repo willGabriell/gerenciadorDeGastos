@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { FlatList, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import Modal from "./Modal/Modal";
+import TransacoesList from "./TransacoesList/TransacoesList";
 
 enum tipoTransacao {
   receita,
@@ -91,7 +92,7 @@ export default function Index() {
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: '#181A20' }}>
+    <View style={{ flex: 1, backgroundColor: '#181A20'}}>
       <View style={styles.BalanceContainer}>
         <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#fff' }}>Seu Saldo</Text>
         <Text style={{ fontSize: 30, fontWeight: 'bold', color: '#fff' }}>{getSaldoFormatado(saldo)}</Text>
@@ -102,12 +103,15 @@ export default function Index() {
         onCancel={fecharModal}
         onSubmit={cadastrarTransacao}
       />
+
+      <TransacoesList transacoes={transacoes} />
+
       <View style={styles.btnContainer}>
         <TouchableOpacity onPress={iniciarTransacaoReceita} style={styles.addBtn}>
-          <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#fff' }}>+</Text>
+          <Text style={styles.addBtnText}>+</Text>
         </TouchableOpacity>
         <TouchableOpacity onPress={iniciarTransacaoDespesa} style={styles.removeBtn}>
-          <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#fff' }}>-</Text>
+          <Text style={styles.addBtnText}>-</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -146,5 +150,10 @@ const styles = StyleSheet.create({
   BalanceContainer: {
     paddingTop: 100,
     paddingLeft: 20
+  },
+  addBtnText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#fff'
   }
 })
