@@ -6,14 +6,49 @@ type modalProps = {
     rendered: boolean;
     onCancel?: () => void;
     onSubmit?: (data: { valor: string; descricao: string; data: string }) => void;
-}
+};
 
 export default function Modal(props: modalProps) {
     const [valor, setValor] = useState('');
     const [descricao, setDescricao] = useState('');
     const [data, setData] = useState('');
 
+    const handleDataChange = (text: string) => {
+        const cleaned = text.replace(/\D/g, '');
+        let formatted = '';
+
+        let day = cleaned.slice(0, 2);
+        let month = cleaned.slice(2, 4);
+        let year = cleaned.slice(4, 8);
+
+        if (day.length === 2) {
+            const dayNum = Math.min(parseInt(day), 31);
+            day = dayNum.toString().padStart(2, '0');
+        }
+
+        if (month.length === 2) {
+            const monthNum = Math.min(parseInt(month), 12);
+            month = monthNum.toString().padStart(2, '0');
+        }
+
+        if (year.length === 4) {
+            const yearNum = Math.min(parseInt(year), 2025);  
+            year = yearNum.toString();
+        }
+
+        if (cleaned.length <= 2) {
+            formatted = day;
+        } else if (cleaned.length <= 4) {
+            formatted = `${day}/${month}`;
+        } else {
+            formatted = `${day}/${month}/${year}`;
+        }
+
+        setData(formatted);
+    };
+
     if (!props.rendered) return null;
+
     return (
         <View style={styles.overlay}>
             <BlurView intensity={60} tint="dark" style={StyleSheet.absoluteFill} />
@@ -29,23 +64,32 @@ export default function Modal(props: modalProps) {
                 <TextInput
                     style={styles.input}
                     placeholder="Data"
-                    textContentType='dateTime'
+                    keyboardType="numeric"
                     value={data}
-                    onChangeText={setData}
+                    onChangeText={handleDataChange}
                 />
                 <TextInput
                     style={styles.input}
                     placeholder="Valor"
                     keyboardType="numeric"
                     value={valor}
-                    onChangeText={setValor}
+                    onChangeText={text => {
+                        const numericText = text.replace(/[^0-9]/g, '');
+                        setValor(numericText);
+                    }}
                 />
 
                 <View style={styles.buttonRow}>
-                    <TouchableOpacity style={styles.cadastrarBtn} onPress={() => props.onSubmit && props.onSubmit({ valor, descricao, data })}>
+                    <TouchableOpacity
+                        style={styles.cadastrarBtn}
+                        onPress={() => props.onSubmit && props.onSubmit({ valor, descricao, data })}
+                    >
                         <Text style={styles.btnText}>Cadastrar</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity style={styles.cancelarBtn} onPress={props.onCancel}>
+                    <TouchableOpacity
+                        style={styles.cancelarBtn}
+                        onPress={props.onCancel}
+                    >
                         <Text style={styles.btnText}>Cancelar</Text>
                     </TouchableOpacity>
                 </View>
