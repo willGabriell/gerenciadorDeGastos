@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { FlatList, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import Modal from "./Modal/Modal";
 import TransacoesList from "./TransacoesList/TransacoesList";
 
@@ -68,6 +68,25 @@ export default function Index() {
     fecharModal();
   }
 
+  const excluirTransacao = (index: number) => {
+    // Obtém a transação a ser excluída
+    const transacaoExcluida = transacoes[index];
+    
+    // Atualiza o saldo (adiciona se for despesa, subtrai se for receita)
+    if (transacaoExcluida.tipo === tipoTransacao.receita) {
+      setSaldo((prev) => prev - transacaoExcluida.valor);
+    } else if (transacaoExcluida.tipo === tipoTransacao.despesa) {
+      setSaldo((prev) => prev + transacaoExcluida.valor);
+    }
+
+    // Remove a transação da lista
+    setTransacoes((prev) => {
+      const novasTransacoes = [...prev];
+      novasTransacoes.splice(index, 1);
+      return novasTransacoes;
+    });
+  };
+
   const validarCampos = (data: { valor: string; descricao: string; data: string }) => {
     if (!data.valor || !data.descricao || !data.data) {
       alert("Preencha todos os campos!");
@@ -104,7 +123,10 @@ export default function Index() {
         onSubmit={cadastrarTransacao}
       />
 
-      <TransacoesList transacoes={transacoes} />
+      <TransacoesList 
+        transacoes={transacoes} 
+        onDelete={excluirTransacao} 
+      />
 
       <View style={styles.btnContainer}>
         <TouchableOpacity onPress={iniciarTransacaoReceita} style={styles.addBtn}>

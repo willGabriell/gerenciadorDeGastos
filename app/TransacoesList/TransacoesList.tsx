@@ -1,4 +1,4 @@
-import { FlatList, Text, View } from "react-native";
+import { FlatList, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 export enum tipoTransacao {
     receita,
@@ -15,20 +15,32 @@ export type transacao = {
 
 type TransacoesListProps = {
     transacoes: transacao[];
+    onDelete: (index: number) => void;
 };
 
-export default function TransacoesList({ transacoes }: TransacoesListProps) {
+export default function TransacoesList({ transacoes, onDelete }: TransacoesListProps) {
     return (
         <FlatList
             data={transacoes}
             keyExtractor={(_, index) => index.toString()}
-            renderItem={({ item }) => (
-                <View style={{ padding: 10, borderBottomWidth: 1, borderBottomColor: '#333' }}>
-                    <Text style={{ fontSize: 18, color: '#fff' }}>{item.descricao}</Text>
-                    <Text style={{ fontSize: 16, color: '#B0B3B8' }}>{item.data}</Text>
-                    <Text style={{ fontSize: 16, color: item.tipo === tipoTransacao.receita ? '#1F8EFA' : '#E2445C' }}>
-                        {item.tipo === tipoTransacao.receita ? '+' : '-'} R$ {item.valor.toFixed(2)}
-                    </Text>
+            renderItem={({ item, index }) => (
+                <View style={styles.itemContainer}>
+                    <View style={styles.infoContainer}>
+                        <Text style={styles.descricao}>{item.descricao}</Text>
+                        <Text style={styles.data}>{item.data}</Text>
+                        <Text style={[
+                            styles.valor, 
+                            { color: item.tipo === tipoTransacao.receita ? '#1F8EFA' : '#E2445C' }
+                        ]}>
+                            {item.tipo === tipoTransacao.receita ? '+' : '-'} R$ {item.valor.toFixed(2)}
+                        </Text>
+                    </View>
+                    <TouchableOpacity 
+                        style={styles.deleteButton}
+                        onPress={() => onDelete(index)}
+                    >
+                        <Text style={styles.deleteButtonText}>X</Text>
+                    </TouchableOpacity>
                 </View>
             )}
             style={{ marginTop: 20, paddingHorizontal: 10 }}
@@ -52,3 +64,42 @@ export default function TransacoesList({ transacoes }: TransacoesListProps) {
         />
     );
 }
+
+const styles = StyleSheet.create({
+    itemContainer: {
+        padding: 10,
+        borderBottomWidth: 1,
+        borderBottomColor: '#333',
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center'
+    },
+    infoContainer: {
+        flex: 1
+    },
+    descricao: {
+        fontSize: 18,
+        color: '#fff'
+    },
+    data: {
+        fontSize: 16,
+        color: '#B0B3B8'
+    },
+    valor: {
+        fontSize: 16
+    },
+    deleteButton: {
+        backgroundColor: '#E2445C',
+        width: 30,
+        height: 30,
+        borderRadius: 15,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginLeft: 10
+    },
+    deleteButtonText: {
+        color: '#fff',
+        fontWeight: 'bold',
+        fontSize: 14
+    }
+});
