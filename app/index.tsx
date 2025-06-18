@@ -21,20 +21,45 @@ export default function Index() {
   const [modal, setModal] = useState<boolean>(false);
   const [tipo, setTipo] = useState<tipoTransacao>(tipoTransacao.semTipo);
   const [transacoes, setTransacoes] = useState<Array<transacao>>(new Array<transacao>());
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
+  const [editingData, setEditingData] = useState<{ valor: number; descricao: string; data: string } | null>(null);
+  const [isEditing, setIsEditing] = useState<boolean>(false);
 
   const iniciarTransacaoReceita = () => {
     setTipo(tipoTransacao.receita);
+    setIsEditing(false);
+    setEditingData(null);
+    setEditingIndex(null);
     exibirModal();
   }
 
   const iniciarTransacaoDespesa = () => {
     setTipo(tipoTransacao.despesa);
+    setIsEditing(false);
+    setEditingData(null);
+    setEditingIndex(null);
+    exibirModal();
+  }
+
+  const iniciarEdicao = (index: number) => {
+    const transacaoParaEditar = transacoes[index];
+    setTipo(transacaoParaEditar.tipo);
+    setEditingData({
+      descricao: transacaoParaEditar.descricao,
+      valor: transacaoParaEditar.valor,
+      data: transacaoParaEditar.data
+    });
+    setEditingIndex(index);
+    setIsEditing(true);
     exibirModal();
   }
 
   const fecharModal = () => {
     setModal(false)
     setTipo(tipoTransacao.semTipo);
+    setIsEditing(false);
+    setEditingData(null);
+    setEditingIndex(null);
   }
 
   const exibirModal = () => {
@@ -43,6 +68,11 @@ export default function Index() {
 
   const cadastrarTransacao = (data: { valor: string; descricao: string; data: string }) => {
     validarCampos(data);
+
+    if (isEditing && editingIndex !== null) {
+      atualizarTransacao(data);
+      return;
+    }
 
     let novaTransacao: transacao;
     if (tipo === tipoTransacao.receita) {
@@ -68,18 +98,43 @@ export default function Index() {
     fecharModal();
   }
 
+  const atualizarTransacao = (data: { valor: string; descricao: string; data: string }) => {
+    if (editingIndex === null) return;
+
+    const transacaoAntiga = transacoes[editingIndex];
+    const valorNovo = parseFloat(data.valor);
+
+    if (transacaoAntiga.tipo === tipoTransacao.receita) {
+      setSaldo((prev) => prev - transacaoAntiga.valor + (tipo === tipoTransacao.receita ? valorNovo : 0));
+    } else {
+      setSaldo((prev) => prev + transacaoAntiga.valor - (tipo === tipoTransacao.despesa ? valorNovo : 0));
+    }
+
+    const transacaoAtualizada: transacao = {
+      descricao: data.descricao,
+      valor: valorNovo,
+      data: data.data,
+      tipo: tipo
+    };
+
+    setTransacoes((prev) => {
+      const novasTransacoes = [...prev];
+      novasTransacoes[editingIndex] = transacaoAtualizada;
+      return novasTransacoes;
+    });
+
+    fecharModal();
+  };
+
   const excluirTransacao = (index: number) => {
-    // Obtém a transação a ser excluída
     const transacaoExcluida = transacoes[index];
     
-    // Atualiza o saldo (adiciona se for despesa, subtrai se for receita)
     if (transacaoExcluida.tipo === tipoTransacao.receita) {
       setSaldo((prev) => prev - transacaoExcluida.valor);
     } else if (transacaoExcluida.tipo === tipoTransacao.despesa) {
       setSaldo((prev) => prev + transacaoExcluida.valor);
     }
 
-    // Remove a transação da lista
     setTransacoes((prev) => {
       const novasTransacoes = [...prev];
       novasTransacoes.splice(index, 1);
@@ -121,11 +176,14 @@ export default function Index() {
         rendered={modal}
         onCancel={fecharModal}
         onSubmit={cadastrarTransacao}
+        editingData={editingData}
+        isEditing={isEditing}
       />
 
       <TransacoesList 
         transacoes={transacoes} 
-        onDelete={excluirTransacao} 
+        onDelete={excluirTransacao}
+        onEdit={iniciarEdicao}
       />
 
       <View style={styles.btnContainer}>

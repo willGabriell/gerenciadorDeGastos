@@ -16,16 +16,20 @@ export type transacao = {
 type TransacoesListProps = {
     transacoes: transacao[];
     onDelete: (index: number) => void;
+    onEdit: (index: number) => void;
 };
 
-export default function TransacoesList({ transacoes, onDelete }: TransacoesListProps) {
+export default function TransacoesList({ transacoes, onDelete, onEdit }: TransacoesListProps) {
     return (
         <FlatList
             data={transacoes}
             keyExtractor={(_, index) => index.toString()}
             renderItem={({ item, index }) => (
                 <View style={styles.itemContainer}>
-                    <View style={styles.infoContainer}>
+                    <TouchableOpacity 
+                        style={styles.infoContainer}
+                        onPress={() => onEdit(index)}
+                    >
                         <Text style={styles.descricao}>{item.descricao}</Text>
                         <Text style={styles.data}>{item.data}</Text>
                         <Text style={[
@@ -34,13 +38,21 @@ export default function TransacoesList({ transacoes, onDelete }: TransacoesListP
                         ]}>
                             {item.tipo === tipoTransacao.receita ? '+' : '-'} R$ {item.valor.toFixed(2)}
                         </Text>
-                    </View>
-                    <TouchableOpacity 
-                        style={styles.deleteButton}
-                        onPress={() => onDelete(index)}
-                    >
-                        <Text style={styles.deleteButtonText}>X</Text>
                     </TouchableOpacity>
+                    <View style={styles.buttonContainer}>
+                        <TouchableOpacity 
+                            style={styles.editButton}
+                            onPress={() => onEdit(index)}
+                        >
+                            <Text style={styles.buttonText}>✎</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity 
+                            style={styles.deleteButton}
+                            onPress={() => onDelete(index)}
+                        >
+                            <Text style={styles.buttonText}>X</Text>
+                        </TouchableOpacity>
+                    </View>
                 </View>
             )}
             style={{ marginTop: 20, paddingHorizontal: 10 }}
@@ -88,6 +100,20 @@ const styles = StyleSheet.create({
     valor: {
         fontSize: 16
     },
+    buttonContainer: {
+        flexDirection: 'row',
+        justifyContent: 'flex-end',
+        alignItems: 'center'
+    },
+    editButton: {
+        backgroundColor: '#1F8EFA',
+        width: 30,
+        height: 30,
+        borderRadius: 15,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginLeft: 10
+    },
     deleteButton: {
         backgroundColor: '#E2445C',
         width: 30,
@@ -97,7 +123,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         marginLeft: 10
     },
-    deleteButtonText: {
+    buttonText: {
         color: '#fff',
         fontWeight: 'bold',
         fontSize: 14

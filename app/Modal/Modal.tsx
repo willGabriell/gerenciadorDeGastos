@@ -1,11 +1,13 @@
 import { BlurView } from 'expo-blur';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 type modalProps = {
     rendered: boolean;
     onCancel?: () => void;
     onSubmit?: (data: { valor: string; descricao: string; data: string }) => void;
+    editingData?: { valor: number; descricao: string; data: string } | null;
+    isEditing?: boolean;
 };
 
 export default function Modal(props: modalProps) {
@@ -20,6 +22,18 @@ export default function Modal(props: modalProps) {
     const [valor, setValor] = useState('');
     const [descricao, setDescricao] = useState('');
     const [data, setData] = useState(getDataHoje());
+
+    useEffect(() => {
+        if (props.editingData && props.isEditing) {
+            setValor(props.editingData.valor.toString());
+            setDescricao(props.editingData.descricao);
+            setData(props.editingData.data);
+        } else if (!props.isEditing) {
+            setValor('');
+            setDescricao('');
+            setData(getDataHoje());
+        }
+    }, [props.editingData, props.isEditing]);
 
     const handleDataChange = (text: string) => {
         const cleaned = text.replace(/\D/g, '');
@@ -111,7 +125,9 @@ export default function Modal(props: modalProps) {
         <View style={styles.overlay}>
             <BlurView intensity={60} tint="dark" style={StyleSheet.absoluteFill} />
             <View style={styles.modal}>
-                <Text style={styles.title}>Adicionar Transação</Text>
+                <Text style={styles.title}>
+                    {props.isEditing ? 'Editar Transação' : 'Adicionar Transação'}
+                </Text>
 
                 <TextInput
                     style={styles.input}
@@ -140,7 +156,9 @@ export default function Modal(props: modalProps) {
 
                 <View style={styles.buttonRow}>
                     <TouchableOpacity style={styles.cadastrarBtn} onPress={handleSubmit}>
-                        <Text style={styles.btnText}>Cadastrar</Text>
+                        <Text style={styles.btnText}>
+                            {props.isEditing ? 'Atualizar' : 'Cadastrar'}
+                        </Text>
                     </TouchableOpacity>
                     <TouchableOpacity style={styles.cancelarBtn} onPress={props.onCancel}>
                         <Text style={styles.btnText}>Cancelar</Text>
