@@ -9,9 +9,17 @@ type modalProps = {
 };
 
 export default function Modal(props: modalProps) {
+    const getDataHoje = () => {
+        const hoje = new Date();
+        const dia = hoje.getDate().toString().padStart(2, '0');
+        const mes = (hoje.getMonth() + 1).toString().padStart(2, '0');
+        const ano = hoje.getFullYear();
+        return `${dia}/${mes}/${ano}`;
+    };
+
     const [valor, setValor] = useState('');
     const [descricao, setDescricao] = useState('');
-    const [data, setData] = useState('');
+    const [data, setData] = useState(getDataHoje());
 
     const handleDataChange = (text: string) => {
         const cleaned = text.replace(/\D/g, '');
@@ -32,7 +40,7 @@ export default function Modal(props: modalProps) {
         }
 
         if (year.length === 4) {
-            const yearNum = Math.min(parseInt(year), 2025);
+            const yearNum = Math.min(parseInt(year), 2099); 
             year = yearNum.toString();
         }
 
@@ -48,7 +56,7 @@ export default function Modal(props: modalProps) {
     };
 
     const handleSubmit = () => {
-        let errors = [];
+        let errors: string[] = [];
 
         if (!valor || isNaN(Number(valor))) {
             errors.push('Valor deve ser numérico e não vazio.');
@@ -76,8 +84,14 @@ export default function Modal(props: modalProps) {
                     const hoje = new Date();
                     hoje.setHours(0, 0, 0, 0);
                     dataInput.setHours(0, 0, 0, 0);
-                    if (dataInput.getTime() !== hoje.getTime()) {
-                        errors.push('Só é permitido cadastrar com a data de hoje.');
+
+                    const limiteMin = new Date(2000, 0, 1);
+                    limiteMin.setHours(0, 0, 0, 0);
+
+                    if (dataInput.getTime() > hoje.getTime()) {
+                        errors.push('Não é permitido cadastrar com data futura.');
+                    } else if (dataInput.getTime() < limiteMin.getTime()) {
+                        errors.push('Não é permitido cadastrar com datas antes do ano 2000.');
                     }
                 }
             }
